@@ -10,9 +10,48 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.githubsearch.api.GitHubService
 import com.example.githubsearch.data.GitHubRepo
+import com.example.githubsearch.data.GitHubSearchResults
+import com.squareup.moshi.Moshi
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+
+
+
+/*
+ * {
+ *   "name": "Hobbes",
+ *   "type": "tiger",
+ *   "age": 8,
+ *   "favoriteFood": "tuna"
+ * }
+ */
+//data class Cat(
+//    val name: String,
+//    val type: String,
+//    val age: Int,
+//    val favoriteFood: String
+//)
+
+/*
+ * {
+ *   "name": "Hobbes",
+ *   "bestFriend": {
+ *     "name": "Calvin",
+ *     "age": 5,
+ *     "alterEgos": ["Spaceman Spiff", "Tracer Bullet", "Stupendous Man"]
+ *   }
+ */
+data class Person(
+    val name: String,
+    val age: Int,
+    val alterEgos: List<String>
+)
+
+data class Cat(
+    val name: String,
+    val bestFriend: Person
+)
 
 class MainActivity : AppCompatActivity() {
     private val gitHubService = GitHubService.create()
@@ -20,21 +59,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val dummySearchResults = listOf<GitHubRepo>(
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results"),
-            GitHubRepo("Dummy search results")
-        )
 
         val searchBoxET: EditText = findViewById(R.id.et_search_box)
         val searchBtn: Button = findViewById(R.id.btn_search)
@@ -61,7 +85,11 @@ class MainActivity : AppCompatActivity() {
             .enqueue(object : Callback<String> {
                 override fun onResponse(call: Call<String>, response: Response<String>) {
                     Log.d("MainActivity", "Status code: ${response.code()}")
-                    Log.d("MainActivity", "Response body: ${response.body()}")
+                    if (response.isSuccessful) {
+                        val moshi = Moshi.Builder().build()
+                        val jsonAdapter = moshi.adapter(GitHubSearchResults::class.java)
+                        val searchResults = jsonAdapter.fromJson(response.body())
+                    }
                 }
 
                 override fun onFailure(call: Call<String>, t: Throwable) {
