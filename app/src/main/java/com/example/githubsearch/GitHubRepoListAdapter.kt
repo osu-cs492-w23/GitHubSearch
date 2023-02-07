@@ -10,8 +10,8 @@ import com.example.githubsearch.data.GitHubRepo
 class GitHubRepoListAdapter : RecyclerView.Adapter<GitHubRepoListAdapter.GitHubRepoViewHolder>() {
     var gitHubRepoList = listOf<GitHubRepo>()
 
-    fun updateRepoList(newRepoList: List<GitHubRepo>) {
-        gitHubRepoList = newRepoList
+    fun updateRepoList(newRepoList: List<GitHubRepo>?) {
+        gitHubRepoList = newRepoList ?: listOf()
         notifyDataSetChanged()
     }
 

@@ -55,6 +55,8 @@ data class Cat(
 
 class MainActivity : AppCompatActivity() {
     private val gitHubService = GitHubService.create()
+    private val githubRepoAdapter = GitHubRepoListAdapter()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,9 +68,7 @@ class MainActivity : AppCompatActivity() {
         val searchResultsListRV: RecyclerView = findViewById(R.id.rv_search_results)
         searchResultsListRV.layoutManager = LinearLayoutManager(this)
         searchResultsListRV.setHasFixedSize(true)
-
-        val adapter = GitHubRepoListAdapter()
-        searchResultsListRV.adapter = adapter
+        searchResultsListRV.adapter = githubRepoAdapter
 
         searchBtn.setOnClickListener {
             val query = searchBoxET.text.toString()
@@ -82,17 +82,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun doRepoSearch(query: String) {
         gitHubService.searchRepositories(query)
-            .enqueue(object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: Response<String>) {
+            .enqueue(object : Callback<GitHubSearchResults> {
+                override fun onResponse(call: Call<GitHubSearchResults>, response: Response<GitHubSearchResults>) {
                     Log.d("MainActivity", "Status code: ${response.code()}")
                     if (response.isSuccessful) {
-                        val moshi = Moshi.Builder().build()
-                        val jsonAdapter = moshi.adapter(GitHubSearchResults::class.java)
-                        val searchResults = jsonAdapter.fromJson(response.body())
+//                        val moshi = Moshi.Builder().build()
+//                        val jsonAdapter = moshi.adapter(GitHubSearchResults::class.java)
+//                        val searchResults = jsonAdapter.fromJson(response.body())
+//                        Log.d("MainActivity", "Search results: $searchResults")
+                        githubRepoAdapter.updateRepoList(response.body()?.items)
                     }
                 }
 
-                override fun onFailure(call: Call<String>, t: Throwable) {
+                override fun onFailure(call: Call<GitHubSearchResults>, t: Throwable) {
                     Log.d("MainActivity", "Error making API call: ${t.message}")
                 }
             })
